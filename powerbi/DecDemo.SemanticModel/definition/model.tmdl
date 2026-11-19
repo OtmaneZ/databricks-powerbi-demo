@@ -1,0 +1,25 @@
+model Model
+	culture: fr-FR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: fr-FR
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+	annotation __PBI_TimeIntelligenceEnabled = 0
+
+ref table fct_sales
+ref table fct_stock_weekly
+ref table quarantine_sales
+ref table dim_date
+ref table dim_store
+ref table dim_product
+ref table dim_customer
+ref table security_region_access
+ref table security_user_group
+ref table Mesures
+
+ref role 'Habilitations régionales'
+
+ref cultureInfo fr-FR

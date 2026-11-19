@@ -23,16 +23,16 @@ R = réalise, A = décide et rend compte (un seul par ligne), C = consulté, I =
 | Activité | Plateforme | Gouvernance | Data owner | Data steward | Référent BI | IT | Groupe |
 |---|---|---|---|---|---|---|---|
 | Nouveau data product | R | C | A | C | C | I | I |
-| Évolution d'un data product | R | I | A | C | C | – | – |
-| Demande d'accès | R | I | A | – | I | R | – |
-| Certification d'un data product | R | A | C | C | I | – | I |
-| Incident N1 (usage, rapport) | I | – | I | C | A/R | – | – |
-| Incident N2 (données, run en échec) | A/R | I | I | C | I | – | – |
-| Incident N3 (plateforme, sécurité) | A/R | C | I | – | I | R | C |
-| Changement de schéma à la source | R | I | A | C | I | R | – |
-| Déploiement Power BI | C | I | A | C | R | C | – |
-| Revue de sécurité et des accès | R | A | C | – | I | C | I |
-| Transfert de compétences | R | A | I | C | C | I | – |
+| Évolution d'un data product | R | I | A | C | C | - | - |
+| Demande d'accès | R | I | A | - | I | R | - |
+| Certification d'un data product | R | A | C | C | I | - | I |
+| Incident N1 (usage, rapport) | I | - | I | C | A/R | - | - |
+| Incident N2 (données, run en échec) | A/R | I | I | C | I | - | - |
+| Incident N3 (plateforme, sécurité) | A/R | C | I | - | I | R | C |
+| Changement de schéma à la source | R | I | A | C | I | R | - |
+| Déploiement Power BI | C | I | A | C | R | C | - |
+| Revue de sécurité et des accès | R | A | C | - | I | C | I |
+| Transfert de compétences | R | A | I | C | C | I | - |
 
 Précisions :
 
@@ -45,7 +45,7 @@ Précisions :
 |---|---|---|---|---|
 | N1 | Référents BI des métiers | Usage des rapports, définition d'un indicateur, « je ne vois pas mes données » | Fiche data product, rapport | La donnée manque ou ne correspond pas à la source |
 | N2 | Équipe plateforme data, avec le data steward | Run en échec, lignes rejetées, écart de chiffres, habilitations | `ops.quarantine_sales`, métriques du pipeline, runbooks | Défaut de plateforme, bug éditeur, suspicion de fuite |
-| N3 | Équipe plateforme data (experts), IT, support éditeur, groupe international si plateforme commune | Panne de plateforme, sécurité, performance | Event log, historique des runs, support éditeur | – |
+| N3 | Équipe plateforme data (experts), IT, support éditeur, groupe international si plateforme commune | Panne de plateforme, sécurité, performance | Event log, historique des runs, support éditeur | - |
 
 Chemin d'escalade : utilisateur → référent BI (N1) → équipe plateforme (N2) → N3.
 
@@ -85,7 +85,7 @@ Principe : on fait, puis on fait ensemble, puis l'équipe fait et on relit.
 | 2. Pairing | Binôme sur des tickets réels | Un data product, un incident N2, un déploiement | Pull requests co-écrites |
 | 3. Runbooks et templates | Rédigés par l'équipe interne, relus | Incidents fréquents, fiche data product | `docs/runbooks/`, `docs/templates/` |
 | 4. Coaching | L'équipe fait, le consultant relit | Revue des pull requests, animation des rituels | Rituels animés par l'équipe |
-| 5. Autonomie | Le consultant n'intervient plus que sur demande | – | Critères de sortie atteints |
+| 5. Autonomie | Le consultant n'intervient plus que sur demande | - | Critères de sortie atteints |
 
 Ateliers :
 

@@ -1,0 +1,30 @@
+/// Sécurité ligne calquée sur ops.security_region_access (Unity Catalog) : l'utilisateur ne voit que les magasins des régions habilitées pour ses groupes ; un groupe habilité sur « * » voit toutes les régions. Le filtre posé sur dim_store se propage aux ventes, aux stocks et à la quarantaine.
+role 'Habilitations régionales'
+	modelPermission: read
+
+	tablePermission dim_store = ```
+			VAR _groupes =
+				CALCULATETABLE(
+					VALUES(security_user_group[principal_group]),
+					security_user_group[user_email] = USERPRINCIPALNAME()
+				)
+			VAR _regions =
+				CALCULATETABLE(
+					VALUES(security_region_access[region]),
+					TREATAS(_groupes, security_region_access[principal_group])
+				)
+			RETURN
+				"*" IN _regions || dim_store[region] IN _regions
+			```
+
+	tablePermission security_user_group = security_user_group[user_email] = USERPRINCIPALNAME()
+
+	tablePermission security_region_access = ```
+			VAR _groupes =
+				CALCULATETABLE(
+					VALUES(security_user_group[principal_group]),
+					security_user_group[user_email] = USERPRINCIPALNAME()
+				)
+			RETURN
+				security_region_access[principal_group] IN _groupes
+			```

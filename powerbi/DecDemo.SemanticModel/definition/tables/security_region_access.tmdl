@@ -1,0 +1,27 @@
+/// Habilitations régionales exportées de ops.security_region_access (Unity Catalog) : groupe habilité et région, ou * pour toutes les régions. Même source que la sécurité ligne de Databricks. Lue par le rôle Habilitations régionales ; sans relation avec le reste du modèle.
+table security_region_access
+	isHidden
+
+	/// Groupe habilité (groupe de l'annuaire en cible).
+	column principal_group
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: principal_group
+
+	/// Code région autorisé, ou * pour toutes les régions.
+	column region
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: region
+
+	partition security_region_access = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(File.Contents(DossierDonnees & "security_region_access.parquet")),
+					#"Colonnes sélectionnées" = Table.SelectColumns(Source, {"principal_group", "region"}),
+					#"Types appliqués" = Table.TransformColumnTypes(#"Colonnes sélectionnées", {{"principal_group", type text}, {"region", type text}})
+				in
+					#"Types appliqués"

@@ -1,0 +1,39 @@
+/// Comptes de test fictifs (@example.com) et leurs groupes. Tient lieu, pour la démo, de l'annuaire d'entreprise qui fournit en cible l'appartenance des utilisateurs aux groupes. Lue par le rôle Habilitations régionales ; sans relation avec le reste du modèle.
+table security_user_group
+	isHidden
+
+	/// Adresse de connexion fictive, comparée à USERPRINCIPALNAME().
+	column user_email
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: user_email
+
+	/// Groupe dont le compte est membre ; correspond à ops.security_region_access[principal_group].
+	column principal_group
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: principal_group
+
+	partition security_user_group = m
+		mode: import
+		source =
+				let
+					Source = #table(
+						type table [user_email = text, principal_group = text],
+						{
+							{"admin.plateforme@example.com", "dec_platform_admins"},
+							{"controle.gestion@example.com", "dec_analysts_national"},
+							{"direction.idf@example.com", "dec_region_idf"},
+							{"direction.nord@example.com", "dec_region_nord"},
+							{"direction.est@example.com", "dec_region_est"},
+							{"direction.ouest@example.com", "dec_region_ouest"},
+							{"direction.sud-est@example.com", "dec_region_sud_est"},
+							{"direction.sud-ouest@example.com", "dec_region_sud_ouest"},
+							{"direction.nord-est@example.com", "dec_region_nord"},
+							{"direction.nord-est@example.com", "dec_region_est"}
+						}
+					)
+				in
+					Source

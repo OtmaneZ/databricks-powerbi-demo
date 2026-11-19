@@ -1,0 +1,50 @@
+/// Data product Stocks (gold.fct_stock_weekly) : position hebdomadaire (lundi) par magasin et produit, sur les 500 références principales, de novembre 2025 à octobre 2026. Données fictives.
+table fct_stock_weekly
+	isHidden
+
+	/// Date de l'inventaire hebdomadaire, reliée à dim_date.
+	column snapshot_date
+		dataType: dateTime
+		isHidden
+		formatString: dd/MM/yyyy
+		summarizeBy: none
+		sourceColumn: snapshot_date
+
+	/// Magasin, relié à dim_store (porte la sécurité ligne).
+	column store_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: store_id
+
+	/// Produit, relié à dim_product.
+	column product_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: product_id
+
+	/// Quantité en stock au moment de l'inventaire.
+	column stock_qty
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: stock_qty
+
+	/// Vrai si le stock est nul (rupture).
+	column is_out_of_stock
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: is_out_of_stock
+
+	partition fct_stock_weekly = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(File.Contents(DossierDonnees & "fct_stock_weekly.parquet")),
+					#"Colonnes sélectionnées" = Table.SelectColumns(Source, {"snapshot_date", "store_id", "product_id", "stock_qty", "is_out_of_stock"}),
+					#"Types appliqués" = Table.TransformColumnTypes(#"Colonnes sélectionnées", {{"snapshot_date", type date}, {"store_id", type text}, {"product_id", type text}, {"stock_qty", Int64.Type}, {"is_out_of_stock", type logical}})
+				in
+					#"Types appliqués"

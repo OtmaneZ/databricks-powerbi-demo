@@ -1,0 +1,699 @@
+/// Table de mesures : toutes les mesures du modèle, rangées par dossier. CA : chiffre d'affaires. N-1 : même période un an plus tôt, calculée seulement si cette période est entièrement couverte par les données (à partir du 1er novembre 2024).
+table Mesures
+
+	/// Chiffre d'affaires net encaissé : quantité × prix unitaire × (1 - remise), produits inconnus compris.
+	measure 'CA net' = SUM(fct_sales[net_amount])
+		formatString: #,0 €
+		displayFolder: 1. Ventes
+
+	/// Coût d'achat des produits vendus. Les lignes de produits absents du catalogue n'ont pas de coût.
+	measure 'Coût d''achat' = SUM(fct_sales[cost_amount])
+		formatString: #,0 €
+		displayFolder: 1. Ventes
+
+	/// Marge brute : CA net - coût d'achat, sur les seuls produits référencés au catalogue.
+	measure 'Marge brute' = SUM(fct_sales[gross_margin])
+		formatString: #,0 €
+		displayFolder: 1. Ventes
+
+	/// CA net des produits présents au catalogue (hors membre UNKNOWN) ; dénominateur du taux de marge brute.
+	measure 'CA net produits référencés' = CALCULATE([CA net], fct_sales[product_id] <> "UNKNOWN")
+		formatString: #,0 €
+		displayFolder: 1. Ventes
+
+	/// Marge brute / CA net des produits référencés : les ventes de produits inconnus, sans coût, sont exclues du calcul.
+	measure 'Taux de marge brute (%)' = DIVIDE([Marge brute], [CA net produits référencés])
+		formatString: 0.0 %
+		displayFolder: 1. Ventes
+
+	/// Unités vendues.
+	measure 'Quantité vendue' = SUM(fct_sales[quantity])
+		formatString: #,0
+		displayFolder: 1. Ventes
+
+	/// Nombre de lignes de tickets publiées dans gold.fct_sales.
+	measure '# Lignes de vente' = COUNTROWS(fct_sales)
+		formatString: #,0
+		displayFolder: 1. Ventes
+
+	/// Nombre de tickets de caisse distincts.
+	measure '# Tickets' = DISTINCTCOUNT(fct_sales[ticket_id])
+		formatString: #,0
+		displayFolder: 1. Ventes
+
+	/// CA net moyen par ticket : CA net / nombre de tickets. Division en virgule flottante pour éviter l'arrondi du décimal fixe.
+	measure 'Panier moyen' = DIVIDE(CONVERT([CA net], DOUBLE), [# Tickets])
+		formatString: #,0.00 €
+		displayFolder: 1. Ventes
+
+	/// Part du CA net réalisée avec les clients professionnels (segment PRO).
+	measure 'Part du CA PRO (%)' = DIVIDE(CALCULATE([CA net], fct_sales[customer_segment] = "PRO"), [CA net])
+		formatString: 0.0 %
+		displayFolder: 1. Ventes
+
+	/// CA net de la famille Jardin, qui porte la saisonnalité et la rupture d'approvisionnement du printemps 2026.
+	measure 'CA net Jardin' = CALCULATE([CA net], dim_product[family] = "Jardin")
+		formatString: #,0 €
+		displayFolder: 1. Ventes
+
+	/// CA net de la même période un an plus tôt. Vide si cette période n'est pas entièrement couverte par les données (historique à partir du 1er novembre 2024) ; les dates postérieures à la dernière vente sont ignorées, pour comparer des périodes de même durée.
+	measure 'CA net N-1' = ```
+			VAR _derniereVente = CALCULATE(MAX(fct_sales[sale_date]), REMOVEFILTERS())
+			VAR _dates = FILTER(VALUES(dim_date[calendar_date]), dim_date[calendar_date] <= _derniereVente)
+			VAR _datesN1 = DATEADD(_dates, -1, YEAR)
+			RETURN
+				IF(
+					COUNTROWS(_dates) > 0 && COUNTROWS(_datesN1) = COUNTROWS(_dates),
+					CALCULATE([CA net], _datesN1)
+				)
+			```
+		formatString: #,0 €
+		displayFolder: 2. Comparaison N-1
+
+	/// CA net - CA net N-1 ; vide sans période précédente complète.
+	measure 'CA net écart N-1' = ```
+			VAR _n1 = [CA net N-1]
+			RETURN IF(NOT ISBLANK(_n1), [CA net] - _n1)
+			```
+		formatString: +#,0 €;-#,0 €;0 €
+		displayFolder: 2. Comparaison N-1
+
+	/// Évolution du CA net sur un an : écart N-1 / CA net N-1.
+	measure 'CA net évol. N-1 (%)' = DIVIDE([CA net écart N-1], [CA net N-1])
+		formatString: +0.0 %;-0.0 %;0.0 %
+		displayFolder: 2. Comparaison N-1
+
+	/// CA net Jardin de la même période un an plus tôt, selon les règles de CA net N-1.
+	measure 'CA net Jardin N-1' = CALCULATE([CA net N-1], dim_product[family] = "Jardin")
+		formatString: #,0 €
+		displayFolder: 2. Comparaison N-1
+
+	/// Évolution du CA net Jardin sur un an.
+	measure 'CA net Jardin évol. N-1 (%)' = ```
+			VAR _n1 = [CA net Jardin N-1]
+			RETURN DIVIDE([CA net Jardin] - _n1, _n1)
+			```
+		formatString: +0.0 %;-0.0 %;0.0 %
+		displayFolder: 2. Comparaison N-1
+
+	/// Nombre de relevés de stock hebdomadaires (un par magasin, produit et lundi).
+	measure '# Relevés de stock' = COUNTROWS(fct_stock_weekly)
+		formatString: #,0
+		displayFolder: 3. Stocks
+
+	/// Nombre de relevés de stock à zéro (rupture).
+	measure '# Ruptures' = CALCULATE(COUNTROWS(fct_stock_weekly), fct_stock_weekly[is_out_of_stock] = TRUE())
+		formatString: #,0
+		displayFolder: 3. Stocks
+
+	/// Part des relevés de stock en rupture : ruptures / relevés.
+	measure 'Taux de rupture (%)' = DIVIDE([# Ruptures], [# Relevés de stock])
+		formatString: 0.0 %
+		displayFolder: 3. Stocks
+
+	/// Rang du produit selon son nombre de ruptures sur la période, du plus fréquent au moins fréquent (1 = plus fréquent ; à égalité, ordre des références). Vide sans rupture. Neutralise chaque colonne de regroupement du tableau ; sert à filtrer le tableau des produits entre 1 et 6.
+	measure 'Rang produit en rupture' = ```
+			VAR _ruptures = [# Ruptures]
+			VAR _produit = SELECTEDVALUE(dim_product[product_id])
+			VAR _classement =
+				CALCULATETABLE(
+					FILTER(
+						ADDCOLUMNS(VALUES(dim_product[product_id]), "@ruptures", [# Ruptures]),
+						NOT ISBLANK([@ruptures])
+					),
+					REMOVEFILTERS(dim_product[product_name]),
+					REMOVEFILTERS(dim_product[family]),
+					REMOVEFILTERS(dim_product[product_id])
+				)
+			RETURN
+				IF(
+					NOT ISBLANK(_ruptures) && NOT ISBLANK(_produit),
+					COUNTROWS(
+						FILTER(
+							_classement,
+							[@ruptures] > _ruptures
+								|| ([@ruptures] = _ruptures && dim_product[product_id] < _produit)
+						)
+					) + 1
+				)
+			```
+		formatString: 0
+		isHidden
+		displayFolder: 3. Stocks
+
+	/// Nombre de lignes de ventes en quarantaine qualité (rejetées, ou conservées avec alerte).
+	measure '# Lignes en quarantaine' = COUNTROWS(quarantine_sales)
+		formatString: #,0
+		displayFolder: 4. Qualité
+
+	/// Nombre de lignes en quarantaine exclues des ventes publiées (gold.fct_sales).
+	measure '# Lignes exclues de gold' = CALCULATE(COUNTROWS(quarantine_sales), quarantine_sales[is_excluded_from_gold] = TRUE())
+		formatString: #,0
+		displayFolder: 4. Qualité
+
+	/// Nombre de lignes dont le prix encaissé dépasse 1,5 fois le prix catalogue en vigueur (contrôle price_consistent_with_catalog).
+	measure '# Lignes au prix incohérent' = CALCULATE(COUNTROWS(quarantine_sales), quarantine_sales[quarantine_reason] = "PRICE_INCONSISTENT_WITH_CATALOG")
+		formatString: #,0
+		displayFolder: 4. Qualité
+
+	/// Nombre de lignes dont la référence produit est absente du catalogue ; elles restent publiées sous le membre UNKNOWN.
+	measure '# Lignes produit inconnu' = CALCULATE(COUNTROWS(quarantine_sales), quarantine_sales[quarantine_reason] = "PRODUCT_NOT_IN_CATALOG")
+		formatString: #,0
+		displayFolder: 4. Qualité
+
+	/// Montant encaissé des lignes au prix incohérent (quantité × prix reçu), qui aurait faussé le CA sans le contrôle.
+	measure 'CA erroné écarté' = ```
+			CALCULATE(
+				SUMX(quarantine_sales, quarantine_sales[quantity] * quarantine_sales[unit_price]),
+				quarantine_sales[quarantine_reason] = "PRICE_INCONSISTENT_WITH_CATALOG"
+			)
+			```
+		formatString: #,0 €
+		displayFolder: 4. Qualité
+
+	/// Montant des mêmes lignes au prix catalogue en vigueur (quantité × prix catalogue).
+	measure 'CA au prix catalogue des lignes écartées' = ```
+			CALCULATE(
+				SUMX(quarantine_sales, quarantine_sales[quantity] * quarantine_sales[list_price_at_sale]),
+				quarantine_sales[quarantine_reason] = "PRICE_INCONSISTENT_WITH_CATALOG"
+			)
+			```
+		formatString: #,0 €
+		displayFolder: 4. Qualité
+
+	/// Rapport entre le montant encaissé et le montant au prix catalogue des lignes au prix incohérent (100 = prix reçus en centimes). Division en virgule flottante.
+	measure 'Ratio prix encaissé sur catalogue' = DIVIDE(CONVERT([CA erroné écarté], DOUBLE), [CA au prix catalogue des lignes écartées])
+		formatString: #,0.0
+		displayFolder: 4. Qualité
+
+	/// Part des lignes reçues exclues des ventes publiées : lignes exclues / (lignes exclues + lignes publiées).
+	measure 'Taux de rejet (%)' = ```
+			VAR _exclues = [# Lignes exclues de gold]
+			RETURN DIVIDE(_exclues, _exclues + [# Lignes de vente])
+			```
+		formatString: 0.00 %
+		displayFolder: 4. Qualité
+
+	/// Rang du couple magasin et jour selon le nombre de lignes au prix incohérent (1 = le plus grand nombre ; à égalité, ordre du magasin puis de la date). Neutralise les deux colonnes de regroupement du tableau, issues de deux tables ; sert à filtrer le tableau entre 1 et 6.
+	measure 'Rang incident de prix' = ```
+			VAR _lignes = [# Lignes au prix incohérent]
+			VAR _magasin = SELECTEDVALUE(dim_store[store_name])
+			VAR _date = SELECTEDVALUE(dim_date[calendar_date])
+			VAR _classement =
+				CALCULATETABLE(
+					FILTER(
+						ADDCOLUMNS(
+							SUMMARIZE(quarantine_sales, dim_store[store_name], dim_date[calendar_date]),
+							"@lignes", [# Lignes au prix incohérent]
+						),
+						NOT ISBLANK([@lignes])
+					),
+					REMOVEFILTERS(dim_store[store_name]),
+					REMOVEFILTERS(dim_date[calendar_date])
+				)
+			RETURN
+				IF(
+					NOT ISBLANK(_lignes) && NOT ISBLANK(_magasin) && NOT ISBLANK(_date),
+					COUNTROWS(
+						FILTER(
+							_classement,
+							[@lignes] > _lignes
+								|| ([@lignes] = _lignes && dim_store[store_name] < _magasin)
+								|| ([@lignes] = _lignes && dim_store[store_name] = _magasin && dim_date[calendar_date] < _date)
+						)
+					) + 1
+				)
+			```
+		formatString: 0
+		isHidden
+		displayFolder: 4. Qualité
+
+	/// Titre de la page Ventes et ruptures : CA net de l'année et évolution sur un an à période comparable.
+	measure 'Titre ventes' = ```
+			VAR _annee = SELECTEDVALUE(dim_date[year])
+			VAR _ca = [CA net]
+			VAR _evolution = [CA net évol. N-1 (%)]
+			VAR _caTexte = FORMAT(_ca / 1000000, "#,0.0", "fr-FR") & " M€"
+			RETURN
+				SWITCH(
+					TRUE(),
+					ISBLANK(_annee), "Sélectionnez une année",
+					ISBLANK(_ca), "Aucune vente sur la sélection",
+					ISBLANK(_evolution),
+						"En " & _annee & ", le CA net atteint " & _caTexte
+							& " (pas de comparaison sur un an : période précédente incomplète)",
+					"En " & _annee & ", le CA net atteint " & _caTexte & ", "
+						& IF(_evolution >= 0, "en hausse", "en baisse")
+						& " de " & FORMAT(ABS(_evolution), "0.0 %", "fr-FR")
+						& " sur un an à période comparable"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Synthèse de la page Ventes et ruptures : région à l'évolution la plus faible et région au taux de rupture le plus élevé.
+	measure 'Synthèse ventes' = ```
+			VAR _annee = SELECTEDVALUE(dim_date[year])
+			VAR _evolutions =
+				FILTER(
+					ADDCOLUMNS(VALUES(dim_store[region]), "@evolution", [CA net évol. N-1 (%)]),
+					NOT ISBLANK([@evolution])
+				)
+			VAR _plusFaible = TOPN(1, _evolutions, [@evolution], ASC, dim_store[region], ASC)
+			VAR _ruptures =
+				FILTER(
+					ADDCOLUMNS(VALUES(dim_store[region]), "@taux", [Taux de rupture (%)]),
+					NOT ISBLANK([@taux])
+				)
+			VAR _plusForte = TOPN(1, _ruptures, [@taux], DESC, dim_store[region], ASC)
+			VAR _texteEvolution =
+				IF(
+					ISEMPTY(_evolutions),
+					"Évolution sur un an non calculable (période précédente incomplète).",
+					"Évolution la plus faible : région " & MAXX(_plusFaible, dim_store[region]) & " ("
+						& FORMAT(MAXX(_plusFaible, [@evolution]), "+0.0 %;-0.0 %;0.0 %", "fr-FR") & ")."
+				)
+			VAR _texteRupture =
+				IF(
+					ISEMPTY(_ruptures),
+					" Pas de relevé de stock sur la période.",
+					" Taux de rupture le plus élevé : région " & MAXX(_plusForte, dim_store[region]) & " ("
+						& FORMAT(MAXX(_plusForte, [@taux]), "0.0 %", "fr-FR") & ")."
+				)
+			RETURN
+				IF(
+					ISBLANK(_annee),
+					"Sélectionnez une année. Données fictives.",
+					_texteEvolution & _texteRupture & " Données fictives."
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre du graphique Jardin : mois où le CA net Jardin évolue le moins bien sur un an.
+	measure 'Titre Jardin mensuel' = ```
+			VAR _mois =
+				FILTER(
+					ADDCOLUMNS(
+						SUMMARIZE(dim_date, dim_date[month], dim_date[month_name]),
+						"@ca", [CA net Jardin],
+						"@caN1", [CA net Jardin N-1]
+					),
+					NOT ISBLANK([@ca]) && NOT ISBLANK([@caN1])
+				)
+			VAR _evolutions = ADDCOLUMNS(_mois, "@evolution", DIVIDE([@ca] - [@caN1], [@caN1]))
+			VAR _pire = TOPN(1, _evolutions, [@evolution], ASC, dim_date[month], ASC)
+			RETURN
+				IF(
+					ISEMPTY(_mois),
+					"CA net Jardin par mois",
+					"CA net Jardin par mois, sur un an : évolution la plus faible en "
+						& MAXX(_pire, dim_date[month_name]) & " ("
+						& FORMAT(MAXX(_pire, [@evolution]), "+0 %;-0 %;0 %", "fr-FR") & ")"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre des évolutions par région : région à l'évolution la plus faible.
+	measure 'Titre évolution par région' = ```
+			VAR _regions =
+				FILTER(
+					ADDCOLUMNS(VALUES(dim_store[region]), "@evolution", [CA net évol. N-1 (%)]),
+					NOT ISBLANK([@evolution])
+				)
+			VAR _plusFaible = TOPN(1, _regions, [@evolution], ASC, dim_store[region], ASC)
+			RETURN
+				IF(
+					ISEMPTY(_regions),
+					"Évolution du CA net sur un an par région",
+					"Évolution du CA net sur un an par région : " & MAXX(_plusFaible, dim_store[region])
+						& " en dernier (" & FORMAT(MAXX(_plusFaible, [@evolution]), "+0.0 %;-0.0 %;0.0 %", "fr-FR") & ")"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre des évolutions par famille, hors membre Inconnu : famille à l'évolution la plus faible.
+	measure 'Titre évolution par famille' = ```
+			VAR _familles =
+				FILTER(
+					ADDCOLUMNS(VALUES(dim_product[family]), "@evolution", [CA net évol. N-1 (%)]),
+					NOT ISBLANK([@evolution]) && dim_product[family] <> "Inconnu"
+				)
+			VAR _plusFaible = TOPN(1, _familles, [@evolution], ASC, dim_product[family], ASC)
+			RETURN
+				IF(
+					ISEMPTY(_familles),
+					"Évolution du CA net sur un an par famille",
+					"Par famille : " & MAXX(_plusFaible, dim_product[family]) & " en dernier ("
+						& FORMAT(MAXX(_plusFaible, [@evolution]), "+0.0 %;-0.0 %;0.0 %", "fr-FR") & ")"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre du taux de rupture par région : région au taux le plus élevé.
+	measure 'Titre ruptures par région' = ```
+			VAR _regions =
+				FILTER(
+					ADDCOLUMNS(VALUES(dim_store[region]), "@taux", [Taux de rupture (%)]),
+					NOT ISBLANK([@taux])
+				)
+			VAR _plusForte = TOPN(1, _regions, [@taux], DESC, dim_store[region], ASC)
+			RETURN
+				IF(
+					ISEMPTY(_regions),
+					"Taux de rupture par région",
+					"Taux de rupture par région : " & MAXX(_plusForte, dim_store[region]) & " en tête ("
+						& FORMAT(MAXX(_plusForte, [@taux]), "0.0 %", "fr-FR") & ")"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre du tableau des produits en rupture : nombre de produits concernés, calculé sans le filtre de rang du visuel.
+	measure 'Titre produits en rupture' = ```
+			VAR _nombre =
+				CALCULATE(
+					COUNTROWS(FILTER(VALUES(dim_product[product_id]), [# Ruptures] > 0)),
+					REMOVEFILTERS(dim_product[product_name]),
+					REMOVEFILTERS(dim_product[family]),
+					REMOVEFILTERS(dim_product[product_id])
+				) + 0
+			RETURN
+				SWITCH(
+					TRUE(),
+					_nombre = 0, "Aucun produit en rupture sur la période",
+					_nombre = 1, "1 produit en rupture",
+					_nombre <= 6, _nombre & " produits en rupture",
+					FORMAT(_nombre, "#,0", "fr-FR") & " produits en rupture : les 6 plus fréquents"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre de la page Qualité : lignes en quarantaine, lignes exclues des ventes publiées et prix incohérents.
+	measure 'Titre qualité' = ```
+			VAR _annee = SELECTEDVALUE(dim_date[year])
+			VAR _lignes = [# Lignes en quarantaine]
+			VAR _exclues = [# Lignes exclues de gold] + 0
+			VAR _prix = [# Lignes au prix incohérent] + 0
+			RETURN
+				SWITCH(
+					TRUE(),
+					ISBLANK(_annee), "Sélectionnez une année",
+					ISBLANK(_lignes), "En " & _annee & ", aucune ligne en quarantaine",
+					"En " & _annee & ", " & FORMAT(_lignes, "#,0", "fr-FR")
+						& IF(_lignes = 1, " ligne en quarantaine, dont ", " lignes en quarantaine, dont ")
+						& FORMAT(_exclues, "#,0", "fr-FR") & " exclues des ventes publiées et "
+						& FORMAT(_prix, "#,0", "fr-FR") & " au prix incohérent"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Synthèse de la page Qualité : principal incident de prix (magasin, jour, rapport au prix catalogue) et taux de rejet.
+	measure 'Synthèse qualité' = ```
+			VAR _annee = SELECTEDVALUE(dim_date[year])
+			VAR _incidents =
+				FILTER(
+					ADDCOLUMNS(
+						SUMMARIZE(quarantine_sales, dim_store[store_name], dim_date[calendar_date]),
+						"@lignes", [# Lignes au prix incohérent],
+						"@ratio", [Ratio prix encaissé sur catalogue]
+					),
+					NOT ISBLANK([@lignes])
+				)
+			VAR _principal = TOPN(1, _incidents, [@lignes], DESC, dim_store[store_name], ASC, dim_date[calendar_date], ASC)
+			VAR _date = MAXX(_principal, dim_date[calendar_date])
+			VAR _dateTexte = FORMAT(DAY(_date), "00") & "/" & FORMAT(MONTH(_date), "00") & "/" & YEAR(_date)
+			VAR _texteIncident =
+				IF(
+					ISEMPTY(_incidents),
+					"Aucun prix incohérent sur la sélection.",
+					"Principal incident de prix : " & MAXX(_principal, dim_store[store_name]) & " le " & _dateTexte
+						& ", prix encaissés " & FORMAT(MAXX(_principal, [@ratio]), "#,0", "fr-FR")
+						& " fois le prix catalogue."
+				)
+			VAR _taux = [Taux de rejet (%)]
+			VAR _texteRejet = IF(ISBLANK(_taux), "", " Taux de rejet : " & FORMAT(_taux, "0.00 %", "fr-FR") & ".")
+			RETURN
+				IF(
+					ISBLANK(_annee),
+					"Sélectionnez une année. Données fictives.",
+					_texteIncident & _texteRejet & " Données fictives."
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre du graphique mensuel de la quarantaine : mois au plus grand nombre de lignes.
+	measure 'Titre quarantaine mensuelle' = ```
+			VAR _mois =
+				FILTER(
+					ADDCOLUMNS(
+						SUMMARIZE(dim_date, dim_date[month], dim_date[month_name]),
+						"@lignes", [# Lignes en quarantaine]
+					),
+					NOT ISBLANK([@lignes])
+				)
+			VAR _pic = TOPN(1, _mois, [@lignes], DESC, dim_date[month], ASC)
+			RETURN
+				IF(
+					ISEMPTY(_mois),
+					"Lignes en quarantaine par mois",
+					"Lignes en quarantaine par mois : pic en " & MAXX(_pic, dim_date[month_name]) & " ("
+						& FORMAT(MAXX(_pic, [@lignes]), "#,0", "fr-FR") & " lignes)"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre de la répartition par motif : motif le plus fréquent.
+	measure 'Titre quarantaine par motif' = ```
+			VAR _motifs =
+				FILTER(
+					ADDCOLUMNS(VALUES(quarantine_sales[reason_label]), "@lignes", [# Lignes en quarantaine]),
+					NOT ISBLANK([@lignes])
+				)
+			VAR _premier = TOPN(1, _motifs, [@lignes], DESC, quarantine_sales[reason_label], ASC)
+			RETURN
+				IF(
+					ISEMPTY(_motifs),
+					"Lignes en quarantaine par motif",
+					"Par motif : " & MAXX(_premier, quarantine_sales[reason_label]) & " en tête ("
+						& FORMAT(MAXX(_premier, [@lignes]), "#,0", "fr-FR") & " lignes)"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre du taux de rejet par région : région au taux le plus élevé.
+	measure 'Titre rejet par région' = ```
+			VAR _regions =
+				FILTER(
+					ADDCOLUMNS(VALUES(dim_store[region]), "@taux", [Taux de rejet (%)]),
+					NOT ISBLANK([@taux])
+				)
+			VAR _plusFort = TOPN(1, _regions, [@taux], DESC, dim_store[region], ASC)
+			RETURN
+				IF(
+					ISEMPTY(_regions),
+					"Taux de rejet par région",
+					"Taux de rejet par région : " & MAXX(_plusFort, dim_store[region]) & " en tête ("
+						& FORMAT(MAXX(_plusFort, [@taux]), "0.00 %", "fr-FR") & ")"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre du tableau des incidents de prix : nombre de couples magasin et jour concernés, calculé sans le filtre de rang du visuel.
+	measure 'Titre incidents de prix' = ```
+			VAR _nombre =
+				CALCULATE(
+					COUNTROWS(
+						FILTER(
+							SUMMARIZE(quarantine_sales, dim_store[store_name], dim_date[calendar_date]),
+							[# Lignes au prix incohérent] > 0
+						)
+					),
+					REMOVEFILTERS(dim_store[store_name]),
+					REMOVEFILTERS(dim_date[calendar_date])
+				) + 0
+			RETURN
+				SWITCH(
+					TRUE(),
+					_nombre = 0, "Prix incohérents : aucun cas sur la sélection",
+					_nombre = 1, "Prix incohérents : 1 cas (un magasin, un jour)",
+					_nombre <= 6, "Prix incohérents : " & _nombre & " cas magasin et jour",
+					"Prix incohérents : " & _nombre & " cas magasin et jour, les 6 plus importants"
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Titre du tableau des contrôles : nombre de motifs observés sur la période.
+	measure 'Titre contrôles' = ```
+			VAR _motifs = COUNTROWS(FILTER(VALUES(quarantine_sales[reason_label]), [# Lignes en quarantaine] > 0)) + 0
+			RETURN
+				IF(
+					_motifs = 0,
+					"Contrôles du pipeline : aucune anomalie",
+					"Contrôles du pipeline : " & _motifs & IF(_motifs = 1, " motif observé", " motifs observés")
+				)
+			```
+		displayFolder: 5. Textes
+
+	/// Valeur de la carte CA net, en millions d'euros, mise en forme en français quel que soit le poste.
+	measure 'Carte CA net' = ```
+			VAR _valeur = [CA net]
+			RETURN IF(ISBLANK(_valeur), "n.d.", FORMAT(_valeur / 1000000, "#,0.0", "fr-FR") & " M€")
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Évolution du CA net sur un an, en texte, sous la carte CA net.
+	measure 'Carte CA net évol.' = ```
+			VAR _valeur = [CA net évol. N-1 (%)]
+			RETURN
+				IF(
+					ISBLANK(_valeur),
+					"n.d. sur un an",
+					IF(_valeur < 0, "-", "+") & FORMAT(ABS(_valeur), "0.0 %", "fr-FR") & " sur un an"
+				)
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Valeur de la carte marge brute, en millions d'euros.
+	measure 'Carte marge brute' = ```
+			VAR _valeur = [Marge brute]
+			RETURN IF(ISBLANK(_valeur), "n.d.", FORMAT(_valeur / 1000000, "#,0.0", "fr-FR") & " M€")
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Taux de marge brute, en texte, sous la carte marge brute.
+	measure 'Carte marge brute taux' = ```
+			VAR _valeur = [Taux de marge brute (%)]
+			RETURN IF(ISBLANK(_valeur), "n.d.", FORMAT(_valeur, "0.0 %", "fr-FR") & " du CA net")
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Valeur de la carte panier moyen, en euros avec deux décimales.
+	measure 'Carte panier moyen' = ```
+			VAR _valeur = [Panier moyen]
+			RETURN IF(ISBLANK(_valeur), "n.d.", FORMAT(_valeur, "#,0.00", "fr-FR") & " €")
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Nombre de tickets, en texte, sous la carte panier moyen.
+	measure 'Carte tickets' = ```
+			VAR _valeur = [# Tickets]
+			RETURN IF(ISBLANK(_valeur), "n.d.", FORMAT(_valeur, "#,0", "fr-FR") & " tickets")
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Valeur de la carte part du CA PRO.
+	measure 'Carte part PRO' = ```
+			VAR _valeur = [Part du CA PRO (%)]
+			RETURN IF(ISBLANK(_valeur), "n.d.", FORMAT(_valeur, "0.0 %", "fr-FR"))
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Part des particuliers, en texte, sous la carte part du CA PRO.
+	measure 'Carte part particuliers' = ```
+			VAR _valeur = [Part du CA PRO (%)]
+			RETURN IF(ISBLANK(_valeur), "n.d.", "Particuliers : " & FORMAT(1 - _valeur, "0.0 %", "fr-FR"))
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Valeur de la carte taux de rupture.
+	measure 'Carte taux de rupture' = ```
+			VAR _valeur = [Taux de rupture (%)]
+			RETURN IF(ISBLANK(_valeur), "n.d.", FORMAT(_valeur, "0.0 %", "fr-FR"))
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Nombre de ruptures et de relevés, en texte, sous la carte taux de rupture.
+	measure 'Carte ruptures' = ```
+			VAR _ruptures = [# Ruptures] + 0
+			VAR _releves = [# Relevés de stock]
+			RETURN
+				IF(
+					ISBLANK(_releves),
+					"Aucun relevé de stock",
+					FORMAT(_ruptures, "#,0", "fr-FR") & " sur " & FORMAT(_releves, "#,0", "fr-FR") & " relevés"
+				)
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Valeur de la carte lignes en quarantaine.
+	measure 'Carte lignes en quarantaine' = FORMAT([# Lignes en quarantaine] + 0, "#,0", "fr-FR")
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Taux de rejet, en texte, sous la carte lignes en quarantaine.
+	measure 'Carte taux de rejet' = ```
+			VAR _valeur = [Taux de rejet (%)]
+			RETURN IF(ISBLANK(_valeur), "Taux de rejet : 0,00 %", "Taux de rejet : " & FORMAT(_valeur, "0.00 %", "fr-FR"))
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Valeur de la carte lignes exclues des ventes publiées.
+	measure 'Carte lignes exclues' = FORMAT([# Lignes exclues de gold] + 0, "#,0", "fr-FR")
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Part des lignes en quarantaine exclues, en texte, sous la carte lignes exclues.
+	measure 'Carte part exclue' = ```
+			VAR _valeur = DIVIDE([# Lignes exclues de gold] + 0, [# Lignes en quarantaine])
+			RETURN IF(ISBLANK(_valeur), "n.d.", FORMAT(_valeur, "0 %", "fr-FR") & " de la quarantaine")
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Valeur de la carte prix incohérents.
+	measure 'Carte prix incohérents' = FORMAT([# Lignes au prix incohérent] + 0, "#,0", "fr-FR")
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Rapport au prix catalogue, en texte, sous la carte prix incohérents.
+	measure 'Carte ratio prix' = ```
+			VAR _valeur = [Ratio prix encaissé sur catalogue]
+			RETURN IF(ISBLANK(_valeur), "Aucun écart de prix", "Prix reçus × " & FORMAT(_valeur, "#,0.0", "fr-FR") & " le catalogue")
+			```
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Valeur de la carte CA erroné écarté, en euros.
+	measure 'Carte CA erroné' = FORMAT([CA erroné écarté] + 0, "#,0", "fr-FR") & " €"
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Montant au prix catalogue, en texte, sous la carte CA erroné écarté.
+	measure 'Carte CA catalogue' = "Au prix catalogue : " & FORMAT([CA au prix catalogue des lignes écartées] + 0, "#,0", "fr-FR") & " €"
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Valeur de la carte produits inconnus.
+	measure 'Carte produits inconnus' = FORMAT([# Lignes produit inconnu] + 0, "#,0", "fr-FR")
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Texte fixe sous la carte produits inconnus : ces lignes restent publiées.
+	measure 'Carte produits inconnus détail' = "Publiées sous UNKNOWN, sans marge"
+		isHidden
+		displayFolder: 6. Cartes KPI
+
+	/// Colonne technique : une table de mesures doit contenir au moins une colonne.
+	column 'Colonne technique'
+		dataType: int64
+		isHidden
+		formatString: 0
+		summarizeBy: none
+		sourceColumn: Colonne technique
+
+	partition Mesures = m
+		mode: import
+		source =
+				let
+					Source = #table(type table [#"Colonne technique" = Int64.Type], {})
+				in
+					Source

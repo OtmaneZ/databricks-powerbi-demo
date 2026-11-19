@@ -1,0 +1,95 @@
+/// Data product Ventes (gold.fct_sales) : une ligne par ligne de ticket, de novembre 2024 à octobre 2026. Le modèle n'importe que les colonnes utiles au rapport. Colonnes techniques ou agrégées par les mesures de la table Mesures. Données fictives.
+table fct_sales
+	isHidden
+
+	/// Numéro de ticket de caisse ; sert au comptage des tickets et au panier moyen.
+	column ticket_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: ticket_id
+
+	/// Date de vente, reliée à dim_date.
+	column sale_date
+		dataType: dateTime
+		isHidden
+		formatString: dd/MM/yyyy
+		summarizeBy: none
+		sourceColumn: sale_date
+
+	/// Magasin, relié à dim_store (porte la sécurité ligne).
+	column store_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: store_id
+
+	/// Produit, relié à dim_product. UNKNOWN si la référence reçue est absente du catalogue.
+	column product_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: product_id
+
+	/// Client, relié à dim_customer. ANONYMOUS pour une vente non identifiée.
+	column customer_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	/// Segment du client au moment de la vente : PRO ou PARTICULIER.
+	column customer_segment
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: customer_segment
+
+	/// Quantité vendue.
+	column quantity
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: quantity
+
+	/// Chiffre d'affaires net de la ligne : quantité × prix unitaire × (1 - remise).
+	column net_amount
+		dataType: decimal
+		isHidden
+		formatString: #,0.00 €
+		summarizeBy: none
+		sourceColumn: net_amount
+
+	/// Coût d'achat de la ligne. Vide si le produit est inconnu.
+	column cost_amount
+		dataType: decimal
+		isHidden
+		formatString: #,0.00 €
+		summarizeBy: none
+		sourceColumn: cost_amount
+
+	/// Marge brute de la ligne : CA net - coût d'achat. Vide si le produit est inconnu.
+	column gross_margin
+		dataType: decimal
+		isHidden
+		formatString: #,0.00 €
+		summarizeBy: none
+		sourceColumn: gross_margin
+
+	/// Canal : MAGASIN ou RETRAIT_DRIVE.
+	column channel
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: channel
+
+	partition fct_sales = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(File.Contents(DossierDonnees & "fct_sales.parquet")),
+					#"Colonnes sélectionnées" = Table.SelectColumns(Source, {"ticket_id", "sale_date", "store_id", "product_id", "customer_id", "customer_segment", "quantity", "net_amount", "cost_amount", "gross_margin", "channel"}),
+					#"Types appliqués" = Table.TransformColumnTypes(#"Colonnes sélectionnées", {{"ticket_id", type text}, {"sale_date", type date}, {"store_id", type text}, {"product_id", type text}, {"customer_id", type text}, {"customer_segment", type text}, {"quantity", Int64.Type}, {"net_amount", Currency.Type}, {"cost_amount", Currency.Type}, {"gross_margin", Currency.Type}, {"channel", type text}})
+				in
+					#"Types appliqués"

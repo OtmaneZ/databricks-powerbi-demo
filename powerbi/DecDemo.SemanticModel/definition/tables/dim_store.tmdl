@@ -1,0 +1,51 @@
+/// Dimension Magasins (gold.dim_store) : 40 magasins répartis en 6 régions. Porte la sécurité ligne du rôle Habilitations régionales.
+table dim_store
+
+	/// Identifiant magasin, clé de la dimension.
+	column store_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: store_id
+
+	/// Nom du magasin (fictif), de la forme « Magasin <ville> ».
+	column store_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: store_name
+
+	/// Ville d'implantation du magasin.
+	column city
+		dataType: string
+		dataCategory: City
+		summarizeBy: none
+		sourceColumn: city
+
+	/// Région : IDF, NORD, EST, OUEST, SUD_EST ou SUD_OUEST. Clé des habilitations régionales.
+	column region
+		dataType: string
+		summarizeBy: none
+		sourceColumn: region
+
+	/// Format du magasin : S (moins de 5 000 m²), M ou L (plus de 9 000 m²).
+	column size_class
+		dataType: string
+		summarizeBy: none
+		sourceColumn: size_class
+
+	/// Surface de vente en m².
+	column surface_m2
+		dataType: int64
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: surface_m2
+
+	partition dim_store = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(File.Contents(DossierDonnees & "dim_store.parquet")),
+					#"Colonnes sélectionnées" = Table.SelectColumns(Source, {"store_id", "store_name", "city", "region", "size_class", "surface_m2"}),
+					#"Types appliqués" = Table.TransformColumnTypes(#"Colonnes sélectionnées", {{"store_id", type text}, {"store_name", type text}, {"city", type text}, {"region", type text}, {"size_class", type text}, {"surface_m2", Int64.Type}})
+				in
+					#"Types appliqués"

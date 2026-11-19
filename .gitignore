@@ -29,8 +29,8 @@ scratch/**
 powerbi/**/.pbi/localSettings.json
 powerbi/**/.pbi/cache.abf
 
-# Generated data (keep fixtures/ small and committed)
-data/
+# Generated data at repo root (powerbi/data/ is versioned on purpose)
+/data/
 
 # OS / editors
 .DS_Store

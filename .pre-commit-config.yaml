@@ -19,6 +19,18 @@ repos:
         entry: uv run sqlfluff lint
         language: system
         types: [sql]
+      - id: powerbi-checks
+        name: Power BI checks (JSON schemas, bindings, model rules, layout)
+        entry: bash -c 'uv run python scripts/check_schemas.py && uv run python scripts/check_bindings.py && uv run python scripts/check_model.py && uv run python scripts/check_layout.py'
+        language: system
+        files: ^(powerbi/|scripts/)
+        pass_filenames: false
+      - id: no-dashes
+        name: no em or en dash in tracked text files
+        entry: uv run python scripts/check_texts.py
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: no-private-files
         name: block _private/ from commits
         entry: bash -c 'echo "_private/ must never be committed"; exit 1'

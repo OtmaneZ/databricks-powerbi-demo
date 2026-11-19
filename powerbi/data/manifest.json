@@ -1,0 +1,135 @@
+{
+  "fct_sales.parquet": {
+    "source": "gold.fct_sales",
+    "rows": 1421506,
+    "bytes": 35058054,
+    "columns": {
+      "ticket_id": "string",
+      "line_no": "int32",
+      "sale_date": "date32[day]",
+      "sold_at": "timestamp[us]",
+      "store_id": "string",
+      "region": "string",
+      "product_id": "string",
+      "source_product_id": "string",
+      "customer_id": "string",
+      "customer_segment": "string",
+      "quantity": "int32",
+      "unit_price": "decimal128(12, 2)",
+      "list_price_at_sale": "decimal128(12, 2)",
+      "discount_rate": "decimal128(4, 2)",
+      "net_amount": "decimal128(14, 2)",
+      "cost_amount": "decimal128(14, 2)",
+      "gross_margin": "decimal128(14, 2)",
+      "payment_method": "string",
+      "channel": "string"
+    }
+  },
+  "fct_stock_weekly.parquet": {
+    "source": "gold.fct_stock_weekly",
+    "rows": 1040000,
+    "bytes": 1854891,
+    "columns": {
+      "snapshot_date": "date32[day]",
+      "store_id": "string",
+      "region": "string",
+      "product_id": "string",
+      "stock_qty": "int32",
+      "reorder_point": "int32",
+      "is_out_of_stock": "bool",
+      "is_below_reorder_point": "bool"
+    }
+  },
+  "dim_store.parquet": {
+    "source": "gold.dim_store",
+    "rows": 40,
+    "bytes": 4559,
+    "columns": {
+      "store_id": "string",
+      "store_name": "string",
+      "city": "string",
+      "region": "string",
+      "size_class": "string",
+      "surface_m2": "int32",
+      "opened_on": "date32[day]"
+    }
+  },
+  "dim_product.parquet": {
+    "source": "gold.dim_product",
+    "rows": 3001,
+    "bytes": 102682,
+    "columns": {
+      "product_id": "string",
+      "product_name": "string",
+      "family": "string",
+      "sub_family": "string",
+      "brand": "string",
+      "current_list_price": "decimal128(12, 2)",
+      "current_unit_cost": "decimal128(12, 2)",
+      "current_margin_rate": "decimal128(5, 3)",
+      "price_valid_from": "timestamp[us]"
+    }
+  },
+  "dim_customer.parquet": {
+    "source": "gold.dim_customer",
+    "rows": 60001,
+    "bytes": 575922,
+    "columns": {
+      "customer_id": "string",
+      "customer_segment": "string",
+      "home_store_id": "string",
+      "loyalty_since": "date32[day]",
+      "marketing_optin": "bool"
+    }
+  },
+  "dim_date.parquet": {
+    "source": "gold.dim_date",
+    "rows": 791,
+    "bytes": 9895,
+    "columns": {
+      "calendar_date": "date32[day]",
+      "year": "int32",
+      "quarter": "int32",
+      "month": "int32",
+      "month_name": "string",
+      "year_month": "string",
+      "iso_week": "int32",
+      "day_of_week": "int32",
+      "day_name": "string",
+      "is_weekend": "bool",
+      "is_public_holiday": "bool"
+    }
+  },
+  "security_region_access.parquet": {
+    "source": "ops.security_region_access",
+    "rows": 8,
+    "bytes": 2451,
+    "columns": {
+      "principal_group": "string",
+      "region": "string",
+      "reason": "string",
+      "granted_on": "date32[day]"
+    }
+  },
+  "quarantine_sales.parquet": {
+    "source": "ops.quarantine_sales",
+    "rows": 6358,
+    "bytes": 175580,
+    "columns": {
+      "ticket_id": "string",
+      "line_no": "int32",
+      "store_id": "string",
+      "product_id": "string",
+      "sold_at": "timestamp[us]",
+      "quantity": "int32",
+      "unit_price": "double",
+      "list_price_at_sale": "double",
+      "quarantine_reason": "string",
+      "rejected_at": "string",
+      "is_excluded_from_gold": "bool",
+      "source_file": "string",
+      "ingested_at": "timestamp[us]",
+      "is_latest_version": "bool"
+    }
+  }
+}

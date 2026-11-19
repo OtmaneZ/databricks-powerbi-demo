@@ -1,0 +1,95 @@
+/// Quarantaine qualité des ventes (ops.quarantine_sales) : lignes rejetées ou signalées par les contrôles du pipeline, avec leur motif. quarantine_date et reason_label sont calculés dans Power Query à partir de sold_at et de quarantine_reason. Données fictives.
+table quarantine_sales
+
+	/// Numéro de ticket tel que reçu.
+	column ticket_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: ticket_id
+
+	/// Magasin tel que reçu, relié à dim_store. Vide pour le motif STORE_MISSING.
+	column store_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: store_id
+
+	/// Date de vente de la ligne (partie date de sold_at), reliée à dim_date.
+	column quarantine_date
+		dataType: dateTime
+		isHidden
+		formatString: dd/MM/yyyy
+		summarizeBy: none
+		sourceColumn: quarantine_date
+
+	/// Quantité telle que reçue.
+	column quantity
+		dataType: int64
+		isHidden
+		formatString: #,0
+		summarizeBy: none
+		sourceColumn: quantity
+
+	/// Prix unitaire tel que reçu de la caisse.
+	column unit_price
+		dataType: decimal
+		isHidden
+		formatString: #,0.00 €
+		summarizeBy: none
+		sourceColumn: unit_price
+
+	/// Prix catalogue en vigueur à la date de vente, si le produit est connu.
+	column list_price_at_sale
+		dataType: decimal
+		isHidden
+		formatString: #,0.00 €
+		summarizeBy: none
+		sourceColumn: list_price_at_sale
+
+	/// Code du motif de quarantaine, tel que produit par le pipeline.
+	column quarantine_reason
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: quarantine_reason
+
+	/// Libellé du motif de quarantaine, en français.
+	column reason_label
+		dataType: string
+		summarizeBy: none
+		sourceColumn: reason_label
+
+	/// Étape du pipeline qui a détecté l'anomalie : silver.sales ou gold.fct_sales.
+	column rejected_at
+		dataType: string
+		summarizeBy: none
+		sourceColumn: rejected_at
+
+	/// Vrai si la ligne est exclue de gold.fct_sales ; faux si elle y est conservée (produit inconnu).
+	column is_excluded_from_gold
+		dataType: boolean
+		isHidden
+		summarizeBy: none
+		sourceColumn: is_excluded_from_gold
+
+	partition quarantine_sales = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(File.Contents(DossierDonnees & "quarantine_sales.parquet")),
+					Libelles = [
+						STORE_MISSING = "Magasin absent",
+						QUANTITY_NOT_POSITIVE = "Quantité nulle ou négative",
+						SOLD_AT_INVALID = "Date de vente invalide",
+						UNIT_PRICE_NOT_POSITIVE = "Prix nul ou négatif",
+						PRICE_INCONSISTENT_WITH_CATALOG = "Prix incohérent avec le catalogue",
+						PRODUCT_NOT_IN_CATALOG = "Produit absent du catalogue"
+					],
+					#"Colonnes sélectionnées" = Table.SelectColumns(Source, {"ticket_id", "store_id", "sold_at", "quantity", "unit_price", "list_price_at_sale", "quarantine_reason", "rejected_at", "is_excluded_from_gold"}),
+					#"Date ajoutée" = Table.AddColumn(#"Colonnes sélectionnées", "quarantine_date", each DateTime.Date([sold_at]), type date),
+					#"Libellé ajouté" = Table.AddColumn(#"Date ajoutée", "reason_label", each Record.FieldOrDefault(Libelles, [quarantine_reason], [quarantine_reason]), type text),
+					#"Colonnes retirées" = Table.RemoveColumns(#"Libellé ajouté", {"sold_at"}),
+					#"Types appliqués" = Table.TransformColumnTypes(#"Colonnes retirées", {{"ticket_id", type text}, {"store_id", type text}, {"quantity", Int64.Type}, {"unit_price", Currency.Type}, {"list_price_at_sale", Currency.Type}, {"quarantine_reason", type text}, {"rejected_at", type text}, {"is_excluded_from_gold", type logical}})
+				in
+					#"Types appliqués"

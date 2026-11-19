@@ -1,0 +1,145 @@
+{
+  "cas": "2026 Magasin Metz octobre",
+  "filtres": {
+    "annee": 2026,
+    "magasin": "Magasin Metz",
+    "mois": 10
+  },
+  "mesures": [
+    {
+      "mesure": "# Lignes au prix incohérent",
+      "type": "nombre",
+      "attendu": 11
+    },
+    {
+      "mesure": "# Lignes de vente",
+      "type": "nombre",
+      "attendu": 977
+    },
+    {
+      "mesure": "# Lignes en quarantaine",
+      "type": "nombre",
+      "attendu": 14
+    },
+    {
+      "mesure": "# Lignes exclues de gold",
+      "type": "nombre",
+      "attendu": 11
+    },
+    {
+      "mesure": "# Lignes produit inconnu",
+      "type": "nombre",
+      "attendu": 3
+    },
+    {
+      "mesure": "# Relevés de stock",
+      "type": "nombre",
+      "attendu": 2000
+    },
+    {
+      "mesure": "# Ruptures",
+      "type": "nombre",
+      "attendu": 45
+    },
+    {
+      "mesure": "# Tickets",
+      "type": "nombre",
+      "attendu": 385
+    },
+    {
+      "mesure": "CA au prix catalogue des lignes écartées",
+      "type": "montant",
+      "attendu": 685.31
+    },
+    {
+      "mesure": "CA erroné écarté",
+      "type": "montant",
+      "attendu": 68531.0
+    },
+    {
+      "mesure": "CA net",
+      "type": "montant",
+      "attendu": 98155.18
+    },
+    {
+      "mesure": "CA net Jardin",
+      "type": "montant",
+      "attendu": 4327.07
+    },
+    {
+      "mesure": "CA net Jardin N-1",
+      "type": "montant",
+      "attendu": 3751.52
+    },
+    {
+      "mesure": "CA net Jardin évol. N-1 (%)",
+      "type": "taux",
+      "attendu": 0.1534178146
+    },
+    {
+      "mesure": "CA net N-1",
+      "type": "montant",
+      "attendu": 73166.47
+    },
+    {
+      "mesure": "CA net produits référencés",
+      "type": "montant",
+      "attendu": 97945.03
+    },
+    {
+      "mesure": "CA net écart N-1",
+      "type": "montant",
+      "attendu": 24988.71
+    },
+    {
+      "mesure": "CA net évol. N-1 (%)",
+      "type": "taux",
+      "attendu": 0.341532262
+    },
+    {
+      "mesure": "Coût d'achat",
+      "type": "montant",
+      "attendu": 66715.89
+    },
+    {
+      "mesure": "Marge brute",
+      "type": "montant",
+      "attendu": 31229.12
+    },
+    {
+      "mesure": "Panier moyen",
+      "type": "ratio",
+      "attendu": 254.9485194805
+    },
+    {
+      "mesure": "Part du CA PRO (%)",
+      "type": "taux",
+      "attendu": 0.4088804075
+    },
+    {
+      "mesure": "Quantité vendue",
+      "type": "nombre",
+      "attendu": 2881
+    },
+    {
+      "mesure": "Ratio prix encaissé sur catalogue",
+      "type": "ratio",
+      "attendu": 100.0
+    },
+    {
+      "mesure": "Taux de marge brute (%)",
+      "type": "taux",
+      "attendu": 0.3188433349
+    },
+    {
+      "mesure": "Taux de rejet (%)",
+      "type": "taux",
+      "attendu": 0.0111336032
+    },
+    {
+      "mesure": "Taux de rupture (%)",
+      "type": "taux",
+      "attendu": 0.0225
+    }
+  ]
+}

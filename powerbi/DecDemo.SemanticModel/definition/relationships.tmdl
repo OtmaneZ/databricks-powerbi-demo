@@ -1,0 +1,35 @@
+relationship 'fct_sales vers dim_date'
+	fromColumn: fct_sales.sale_date
+	toColumn: dim_date.calendar_date
+
+relationship 'fct_sales vers dim_store'
+	fromColumn: fct_sales.store_id
+	toColumn: dim_store.store_id
+
+relationship 'fct_sales vers dim_product'
+	fromColumn: fct_sales.product_id
+	toColumn: dim_product.product_id
+
+relationship 'fct_sales vers dim_customer'
+	fromColumn: fct_sales.customer_id
+	toColumn: dim_customer.customer_id
+
+relationship 'fct_stock_weekly vers dim_date'
+	fromColumn: fct_stock_weekly.snapshot_date
+	toColumn: dim_date.calendar_date
+
+relationship 'fct_stock_weekly vers dim_store'
+	fromColumn: fct_stock_weekly.store_id
+	toColumn: dim_store.store_id
+
+relationship 'fct_stock_weekly vers dim_product'
+	fromColumn: fct_stock_weekly.product_id
+	toColumn: dim_product.product_id
+
+relationship 'quarantine_sales vers dim_date'
+	fromColumn: quarantine_sales.quarantine_date
+	toColumn: dim_date.calendar_date
+
+relationship 'quarantine_sales vers dim_store'
+	fromColumn: quarantine_sales.store_id
+	toColumn: dim_store.store_id

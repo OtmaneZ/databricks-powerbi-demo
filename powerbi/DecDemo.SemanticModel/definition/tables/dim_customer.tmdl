@@ -1,0 +1,25 @@
+/// Dimension Clients (gold.dim_customer) : 60 000 clients fidélité plus le membre ANONYMOUS. Aucune donnée personnelle : les noms, emails et téléphones restent dans la couche silver, masqués.
+table dim_customer
+
+	/// Identifiant client fidélité (pseudonyme), clé de la dimension. ANONYMOUS pour une vente non identifiée.
+	column customer_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	/// Segment du client : PRO ou PARTICULIER.
+	column customer_segment
+		dataType: string
+		summarizeBy: none
+		sourceColumn: customer_segment
+
+	partition dim_customer = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(File.Contents(DossierDonnees & "dim_customer.parquet")),
+					#"Colonnes sélectionnées" = Table.SelectColumns(Source, {"customer_id", "customer_segment"}),
+					#"Types appliqués" = Table.TransformColumnTypes(#"Colonnes sélectionnées", {{"customer_id", type text}, {"customer_segment", type text}})
+				in
+					#"Types appliqués"

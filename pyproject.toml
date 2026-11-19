@@ -21,6 +21,8 @@ dev = [
     "pre-commit",
     "ipykernel",
     "faker",
+    "jsonschema>=4.26.0",
+    "referencing>=0.37.0",
 ]
 
 [build-system]
@@ -37,5 +39,9 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["dec_demo", "tmdl", "check_bindings", "check_layout", "check_model", "check_schemas", "build_report", "build_validation_dax"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["scripts"]

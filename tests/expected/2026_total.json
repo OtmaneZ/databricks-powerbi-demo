@@ -1,0 +1,313 @@
+{
+  "cas": "2026 total",
+  "filtres": {
+    "annee": 2026
+  },
+  "mesures": [
+    {
+      "mesure": "# Lignes au prix incohérent",
+      "type": "nombre",
+      "attendu": 11
+    },
+    {
+      "mesure": "# Lignes de vente",
+      "type": "nombre",
+      "attendu": 615484
+    },
+    {
+      "mesure": "# Lignes en quarantaine",
+      "type": "nombre",
+      "attendu": 2717
+    },
+    {
+      "mesure": "# Lignes exclues de gold",
+      "type": "nombre",
+      "attendu": 954
+    },
+    {
+      "mesure": "# Lignes produit inconnu",
+      "type": "nombre",
+      "attendu": 1763
+    },
+    {
+      "mesure": "# Relevés de stock",
+      "type": "nombre",
+      "attendu": 860000
+    },
+    {
+      "mesure": "# Ruptures",
+      "type": "nombre",
+      "attendu": 19733
+    },
+    {
+      "mesure": "# Tickets",
+      "type": "nombre",
+      "attendu": 250762
+    },
+    {
+      "mesure": "CA au prix catalogue des lignes écartées",
+      "type": "montant",
+      "attendu": 685.31
+    },
+    {
+      "mesure": "CA erroné écarté",
+      "type": "montant",
+      "attendu": 68531.0
+    },
+    {
+      "mesure": "CA net",
+      "type": "montant",
+      "attendu": 62853167.34
+    },
+    {
+      "mesure": "CA net Jardin",
+      "type": "montant",
+      "attendu": 5160136.88
+    },
+    {
+      "mesure": "CA net Jardin N-1",
+      "type": "montant",
+      "attendu": 5095623.25
+    },
+    {
+      "mesure": "CA net Jardin évol. N-1 (%)",
+      "type": "taux",
+      "attendu": 0.0126605965
+    },
+    {
+      "mesure": "CA net N-1",
+      "type": "montant",
+      "attendu": 59532966.32
+    },
+    {
+      "mesure": "CA net produits référencés",
+      "type": "montant",
+      "attendu": 62675254.33
+    },
+    {
+      "mesure": "CA net écart N-1",
+      "type": "montant",
+      "attendu": 3320201.0200000033
+    },
+    {
+      "mesure": "CA net évol. N-1 (%)",
+      "type": "taux",
+      "attendu": 0.0557707977
+    },
+    {
+      "mesure": "Coût d'achat",
+      "type": "montant",
+      "attendu": 42991823.07
+    },
+    {
+      "mesure": "Marge brute",
+      "type": "montant",
+      "attendu": 19683411.6
+    },
+    {
+      "mesure": "Panier moyen",
+      "type": "ratio",
+      "attendu": 250.6486921463
+    },
+    {
+      "mesure": "Part du CA PRO (%)",
+      "type": "taux",
+      "attendu": 0.4717703475
+    },
+    {
+      "mesure": "Quantité vendue",
+      "type": "nombre",
+      "attendu": 1827698
+    },
+    {
+      "mesure": "Ratio prix encaissé sur catalogue",
+      "type": "ratio",
+      "attendu": 100.0
+    },
+    {
+      "mesure": "Taux de marge brute (%)",
+      "type": "taux",
+      "attendu": 0.3140539565
+    },
+    {
+      "mesure": "Taux de rejet (%)",
+      "type": "taux",
+      "attendu": 0.0015476009
+    },
+    {
+      "mesure": "Taux de rupture (%)",
+      "type": "taux",
+      "attendu": 0.0229453488
+    },
+    {
+      "mesure": "Carte CA catalogue",
+      "type": "texte",
+      "attendu": "Au prix catalogue : 685 €"
+    },
+    {
+      "mesure": "Carte CA erroné",
+      "type": "texte",
+      "attendu": "68 531 €"
+    },
+    {
+      "mesure": "Carte CA net",
+      "type": "texte",
+      "attendu": "62,9 M€"
+    },
+    {
+      "mesure": "Carte CA net évol.",
+      "type": "texte",
+      "attendu": "+5,6 % sur un an"
+    },
+    {
+      "mesure": "Carte lignes en quarantaine",
+      "type": "texte",
+      "attendu": "2 717"
+    },
+    {
+      "mesure": "Carte lignes exclues",
+      "type": "texte",
+      "attendu": "954"
+    },
+    {
+      "mesure": "Carte marge brute",
+      "type": "texte",
+      "attendu": "19,7 M€"
+    },
+    {
+      "mesure": "Carte marge brute taux",
+      "type": "texte",
+      "attendu": "31,4 % du CA net"
+    },
+    {
+      "mesure": "Carte panier moyen",
+      "type": "texte",
+      "attendu": "250,65 €"
+    },
+    {
+      "mesure": "Carte part PRO",
+      "type": "texte",
+      "attendu": "47,2 %"
+    },
+    {
+      "mesure": "Carte part exclue",
+      "type": "texte",
+      "attendu": "35 % de la quarantaine"
+    },
+    {
+      "mesure": "Carte part particuliers",
+      "type": "texte",
+      "attendu": "Particuliers : 52,8 %"
+    },
+    {
+      "mesure": "Carte prix incohérents",
+      "type": "texte",
+      "attendu": "11"
+    },
+    {
+      "mesure": "Carte produits inconnus",
+      "type": "texte",
+      "attendu": "1 763"
+    },
+    {
+      "mesure": "Carte produits inconnus détail",
+      "type": "texte",
+      "attendu": "Publiées sous UNKNOWN, sans marge"
+    },
+    {
+      "mesure": "Carte ratio prix",
+      "type": "texte",
+      "attendu": "Prix reçus × 100,0 le catalogue"
+    },
+    {
+      "mesure": "Carte ruptures",
+      "type": "texte",
+      "attendu": "19 733 sur 860 000 relevés"
+    },
+    {
+      "mesure": "Carte taux de rejet",
+      "type": "texte",
+      "attendu": "Taux de rejet : 0,15 %"
+    },
+    {
+      "mesure": "Carte taux de rupture",
+      "type": "texte",
+      "attendu": "2,3 %"
+    },
+    {
+      "mesure": "Carte tickets",
+      "type": "texte",
+      "attendu": "250 762 tickets"
+    },
+    {
+      "mesure": "Synthèse qualité",
+      "type": "texte",
+      "attendu": "Principal incident de prix : Magasin Metz le 14/10/2026, prix encaissés 100 fois le prix catalogue. Taux de rejet : 0,15 %. Données fictives."
+    },
+    {
+      "mesure": "Synthèse ventes",
+      "type": "texte",
+      "attendu": "Évolution la plus faible : région NORD (+4,5 %). Taux de rupture le plus élevé : région NORD (3,6 %). Données fictives."
+    },
+    {
+      "mesure": "Titre Jardin mensuel",
+      "type": "texte",
+      "attendu": "CA net Jardin par mois, sur un an : évolution la plus faible en mai (-8 %)"
+    },
+    {
+      "mesure": "Titre contrôles",
+      "type": "texte",
+      "attendu": "Contrôles du pipeline : 4 motifs observés"
+    },
+    {
+      "mesure": "Titre incidents de prix",
+      "type": "texte",
+      "attendu": "Prix incohérents : 1 cas (un magasin, un jour)"
+    },
+    {
+      "mesure": "Titre produits en rupture",
+      "type": "texte",
+      "attendu": "500 produits en rupture : les 6 plus fréquents"
+    },
+    {
+      "mesure": "Titre qualité",
+      "type": "texte",
+      "attendu": "En 2026, 2 717 lignes en quarantaine, dont 954 exclues des ventes publiées et 11 au prix incohérent"
+    },
+    {
+      "mesure": "Titre quarantaine mensuelle",
+      "type": "texte",
+      "attendu": "Lignes en quarantaine par mois : pic en mai (375 lignes)"
+    },
+    {
+      "mesure": "Titre quarantaine par motif",
+      "type": "texte",
+      "attendu": "Par motif : Produit absent du catalogue en tête (1 763 lignes)"
+    },
+    {
+      "mesure": "Titre rejet par région",
+      "type": "texte",
+      "attendu": "Taux de rejet par région : EST en tête (0,12 %)"
+    },
+    {
+      "mesure": "Titre ruptures par région",
+      "type": "texte",
+      "attendu": "Taux de rupture par région : NORD en tête (3,6 %)"
+    },
+    {
+      "mesure": "Titre ventes",
+      "type": "texte",
+      "attendu": "En 2026, le CA net atteint 62,9 M€, en hausse de 5,6 % sur un an à période comparable"
+    },
+    {
+      "mesure": "Titre évolution par famille",
+      "type": "texte",
+      "attendu": "Par famille : Jardin en dernier (+1,3 %)"
+    },
+    {
+      "mesure": "Titre évolution par région",
+      "type": "texte",
+      "attendu": "Évolution du CA net sur un an par région : NORD en dernier (+4,5 %)"
+    }
+  ]
+}

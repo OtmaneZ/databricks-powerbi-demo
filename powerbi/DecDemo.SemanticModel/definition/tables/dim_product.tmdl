@@ -1,0 +1,43 @@
+/// Dimension Produits (gold.dim_product) : version courante du catalogue, 3 000 références plus le membre UNKNOWN pour les références absentes du catalogue.
+table dim_product
+
+	/// Référence produit, clé de la dimension. UNKNOWN pour une référence absente du catalogue.
+	column product_id
+		dataType: string
+		isHidden
+		summarizeBy: none
+		sourceColumn: product_id
+
+	/// Libellé du produit (fictif), unique par référence.
+	column product_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: product_name
+
+	/// Famille : Outillage, Matériaux, Peinture, Plomberie, Électricité, Jardin, Menuiserie ou Sanitaire.
+	column family
+		dataType: string
+		summarizeBy: none
+		sourceColumn: family
+
+	/// Sous-famille de produits.
+	column sub_family
+		dataType: string
+		summarizeBy: none
+		sourceColumn: sub_family
+
+	/// Marque (fictive).
+	column brand
+		dataType: string
+		summarizeBy: none
+		sourceColumn: brand
+
+	partition dim_product = m
+		mode: import
+		source =
+				let
+					Source = Parquet.Document(File.Contents(DossierDonnees & "dim_product.parquet")),
+					#"Colonnes sélectionnées" = Table.SelectColumns(Source, {"product_id", "product_name", "family", "sub_family", "brand"}),
+					#"Types appliqués" = Table.TransformColumnTypes(#"Colonnes sélectionnées", {{"product_id", type text}, {"product_name", type text}, {"family", type text}, {"sub_family", type text}, {"brand", type text}})
+				in
+					#"Types appliqués"
