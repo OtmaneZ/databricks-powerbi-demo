@@ -150,6 +150,8 @@ PAGES = [
                 "titre": "Titre rejet par région",
                 "signe": False,
                 "infobulles": ["# Lignes exclues de gold", "# Lignes de vente"],
+                # Lignes en quarantaine sans magasin : région vide, taux de 100 %.
+                "exclure": ("dim_store", "region", None),
             },
             {
                 "zone": "bas_centre",
@@ -538,7 +540,9 @@ def filtre_rang(nom_mesure: str, nom_visuel: str) -> dict:
     }
 
 
-def filtre_exclusion(table: str, nom_colonne: str, valeur: str, nom_visuel: str) -> dict:
+def filtre_exclusion(table: str, nom_colonne: str, valeur: str | None, nom_visuel: str) -> dict:
+    # None exclut la valeur vide.
+    valeur_filtre = "null" if valeur is None else f"'{valeur}'"
     return {
         "name": "Filter" + identifiant(nom_visuel, nom_colonne)[:20],
         "field": colonne(table, nom_colonne),
@@ -553,7 +557,7 @@ def filtre_exclusion(table: str, nom_colonne: str, valeur: str, nom_visuel: str)
                             "Expression": {
                                 "In": {
                                     "Expressions": [colonne(table, nom_colonne, "d")],
-                                    "Values": [[{"Literal": {"Value": f"'{valeur}'"}}]],
+                                    "Values": [[{"Literal": {"Value": valeur_filtre}}]],
                                 }
                             }
                         }

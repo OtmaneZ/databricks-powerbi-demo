@@ -478,12 +478,12 @@ table Mesures
 			```
 		displayFolder: 5. Textes
 
-	/// Titre du taux de rejet par région : région au taux le plus élevé.
+	/// Titre du taux de rejet par région : région au taux le plus élevé. Ignore la région vide des lignes en quarantaine sans magasin (taux de 100 % par construction).
 	measure 'Titre rejet par région' = ```
 			VAR _regions =
 				FILTER(
 					ADDCOLUMNS(VALUES(dim_store[region]), "@taux", [Taux de rejet (%)]),
-					NOT ISBLANK([@taux])
+					NOT ISBLANK(dim_store[region]) && NOT ISBLANK([@taux])
 				)
 			VAR _plusFort = TOPN(1, _regions, [@taux], DESC, dim_store[region], ASC)
 			RETURN
