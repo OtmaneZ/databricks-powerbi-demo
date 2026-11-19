@@ -11,9 +11,17 @@ La démo illustre une chaîne complète, de la donnée brute au data product gou
 | Gouvernance Unity Catalog : RLS par région pilotée par une table d'habilitations, masquage des données personnelles, tags, certification | Fait |
 | Data products gold documentés (modèle en étoile), quarantaine qualité, runbook N2 testé | Fait |
 | Orchestration : Lakeflow Job déployé par Declarative Automation Bundles (cibles dev et prod) | Fait |
-| Modèle sémantique Power BI (PBIP / TMDL, rapport PBIR) sur des exports Parquet de gold, RLS calquée sur Unity Catalog, requête de validation DAX | Construit, contrôles automatiques au vert. **NON VÉRIFIÉ** dans Power BI Desktop |
+| Modèle sémantique Power BI (PBIP / TMDL, rapport PBIR) sur des exports Parquet de gold, RLS calquée sur Unity Catalog, requête de validation DAX | Fait : vérifié dans Power BI Desktop le 19/11/2026, requête de validation à 386 contrôles et 0 KO |
 | Migration d'un traitement SAS avec réconciliation | À venir |
 | Ingestion API, optimisation des performances, cas d'usage IA (Genie) | À venir |
+
+## Captures
+
+Rapport Power BI ouvert dans Power BI Desktop, année 2026, toutes régions. Données fictives.
+
+![Page Ventes et ruptures](docs/captures/ventes-ruptures.png)
+
+![Page Qualité et incident de prix](docs/captures/qualite-incident-prix.png)
 
 ## Documentation
 
@@ -62,7 +70,7 @@ Scénario d'incident : `--only-month 2026-10` dépose le mois d'octobre, qui con
 
 ## Power BI
 
-Le projet `powerbi/DecDemo.pbip` lit des fichiers Parquet exportés de la couche gold : il s'ouvre sur n'importe quel poste Windows, sans identifiant Databricks.
+Le projet `powerbi/DecDemo.pbip` lit des fichiers Parquet exportés de la couche gold : il s'ouvre sur n'importe quel poste Windows, sans identifiant Databricks. La requête `tests/validation.dax` compare 386 valeurs du modèle aux valeurs calculées en SQL sur Databricks : 0 écart dans Power BI Desktop le 19/11/2026.
 
 ```bash
 # Export des tables gold et des tables ops utiles au rapport vers powerbi/data/ (contrôle des comptes, des tailles et des données personnelles)
