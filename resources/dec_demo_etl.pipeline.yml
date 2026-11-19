@@ -1,0 +1,18 @@
+# Single Lakeflow pipeline bronze -> silver -> gold (Free Edition: 1 active pipeline per type).
+# Tables are written with fully qualified names <catalog>.<bronze|silver|gold>.<table>.
+resources:
+  pipelines:
+    dec_demo_etl:
+      name: dec_demo_etl
+      catalog: ${var.catalog}
+      schema: bronze
+      serverless: true
+      root_path: ../src/dec_demo_etl
+      libraries:
+        - glob:
+            include: ../src/dec_demo_etl/transformations/**
+      configuration:
+        catalog: ${var.catalog}
+      environment:
+        dependencies:
+          - --editable ${workspace.file_path}

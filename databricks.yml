@@ -1,0 +1,38 @@
+# Declarative Automation Bundle (ex-Databricks Asset Bundles) for the DEC demo.
+# Docs: https://docs.databricks.com/dev-tools/bundles/
+# Auth: `databricks auth login --host <free-edition-url> --profile dec-demo`
+bundle:
+  name: dec_demo
+
+include:
+  - resources/*.yml
+
+artifacts:
+  python_artifact:
+    type: whl
+    build: uv build --wheel
+
+variables:
+  catalog:
+    description: Unity Catalog catalog for this target (one catalog per environment).
+  serverless_env_version:
+    description: Serverless environment version. Must match databricks-connect in pyproject.toml (5 <-> 18.x).
+    default: "5"
+
+targets:
+  dev:
+    # Resources prefixed "[dev <user>]", schedules paused.
+    mode: development
+    default: true
+    workspace:
+      profile: dec-demo
+    variables:
+      catalog: dec_dev
+
+  prod:
+    mode: production
+    workspace:
+      profile: dec-demo
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: dec_prod

@@ -1,0 +1,36 @@
+# Local-only notes. Never commit.
+_private/
+docs/demo/
+
+# Databricks
+.databricks/
+.databrickscfg
+
+# Python
+.venv/
+__pycache__/
+*.egg-info
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets
+.env
+.env.*
+*.pem
+
+# Scratch / explorations
+scratch/**
+!scratch/README.md
+**/explorations/**
+
+# Power BI (PBIP): local cache and user settings, never versioned
+powerbi/**/.pbi/localSettings.json
+powerbi/**/.pbi/cache.abf
+
+# Generated data (keep fixtures/ small and committed)
+data/
+
+# OS / editors
+.DS_Store
