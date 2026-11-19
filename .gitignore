@@ -21,8 +21,7 @@ dist/
 *.pem
 
 # Scratch / explorations
-scratch/**
-!scratch/README.md
+scratch/
 **/explorations/**
 
 # Power BI (PBIP): local cache and user settings, never versioned
