@@ -60,6 +60,13 @@ Utiliser ces noms dans le code, la documentation et à l'oral. Source : [product
 | `GRANT … TO \`account users\`` | OK |
 | API compte (`databricks account …`) | **Indisponible** (pas de console compte sur Free Edition) |
 | `is_member('admins')` / `is_account_group_member('admins')` | `true` / `false` : les row filters doivent utiliser `is_member()` pour les groupes locaux |
+| `is_member()` avec un nom de groupe lu dans une table | OK : la RLS peut être pilotée par une table d'habilitations |
+| RLS et masques en conditions réelles (utilisateur passé de `dec_platform_admins` à `dec_region_nord`) | OK : seulement NORD visible (223 482 lignes sur 1,36 M, 7 magasins sur 40), email, téléphone et nom masqués |
+| Délai de prise en compte d'un changement d'appartenance à un groupe par `is_member()` | **Environ 5 minutes** (entre 280 et 311 s mesurées). À prévoir dans les tests d'accès et les démonstrations |
+| Pipeline Lakeflow SQL avec `${catalog}` et `${landing_path}` dans les noms et chemins | OK |
+| Ingestion incrémentale (arrivée d'un nouveau mois) | OK : seules les 61 502 nouvelles lignes ont été traitées en silver |
+| AUTO CDC SCD2 avec `IGNORE NULL UPDATES` (événements de prix partiels) | OK : 301 versions historisées, aucun attribut perdu |
+| URL du workspace enregistrée avec un chemin (`…/browse`) | Le CLI la tolère, le SDK Python échoue. Enregistrer l'URL sans chemin |
 
 Conséquences pour la démo :
 - Les GRANT par groupe sont écrits pour la cible (groupes de compte synchronisés depuis Entra ID par SCIM) et ne peuvent pas être exécutés tels quels sur Free Edition.

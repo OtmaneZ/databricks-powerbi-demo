@@ -1,11 +1,26 @@
 [sqlfluff]
 dialect = databricks
-templater = raw
+templater = placeholder
 max_line_length = 120
-exclude_rules = LT05
+# LT05: long COMMENT literals are documentation, not code.
+# CP02: platform system columns (__START_AT, __END_AT) are upper case by design.
+# AM04: bronze tables keep every source column on purpose (SELECT *).
+# RF04: calendar columns named year / month / quarter are intended for BI users.
+# ST06: column order must match the explicit schemas of pipeline datasets; never reorder.
+exclude_rules = LT05, CP02, AM04, RF04, ST06
+
+[sqlfluff:templater:placeholder]
+# ${catalog} and ${landing_path} are substituted by dec_demo.governance / the pipeline configuration.
+param_style = flyway_var
+catalog = dec_dev
+landing_path = /Volumes/dec_dev/bronze/landing
 
 [sqlfluff:rules:capitalisation.keywords]
 capitalisation_policy = upper
 
 [sqlfluff:rules:capitalisation.functions]
-extended_capitalisation_policy = upper
+# Databricks documentation convention: lower-case function names.
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = upper

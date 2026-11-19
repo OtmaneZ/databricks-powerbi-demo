@@ -1,5 +1,7 @@
-# Single Lakeflow pipeline bronze -> silver -> gold (Free Edition: 1 active pipeline per type).
-# Tables are written with fully qualified names <catalog>.<bronze|silver|gold>.<table>.
+# Single Lakeflow pipeline bronze -> silver -> gold (+ ops quarantine), in SQL.
+# Free Edition allows one active pipeline per type, hence a single pipeline.
+# Datasets use fully qualified names ${catalog}.<schema>.<table>; schemas, security table,
+# row filter and masks are created beforehand by sql/governance (00_setup, 10_security).
 resources:
   pipelines:
     dec_demo_etl:
@@ -13,6 +15,4 @@ resources:
             include: ../src/dec_demo_etl/transformations/**
       configuration:
         catalog: ${var.catalog}
-      environment:
-        dependencies:
-          - --editable ${workspace.file_path}
+        landing_path: /Volumes/${var.catalog}/bronze/landing

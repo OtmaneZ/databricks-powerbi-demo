@@ -1,0 +1,63 @@
+# Daily platform run (Lakeflow Job): governance objects -> pipeline -> data product metadata and grants.
+# In the dev target the schedule is paused automatically (mode: development).
+resources:
+  jobs:
+    dec_demo_platform:
+      name: dec_demo_platform
+      description: Daily run of the DEC demo platform. Security objects, pipeline refresh, data product tags and grants.
+
+      trigger:
+        periodic:
+          interval: 1
+          unit: DAYS
+
+      email_notifications:
+        on_failure:
+          - ${workspace.current_user.userName}
+
+      tasks:
+        - task_key: governance_setup
+          description: Schemas, entitlement table, row filter and column masks (sql/governance 00 and 10).
+          environment_key: default
+          python_wheel_task:
+            package_name: dec_demo
+            entry_point: dec-governance
+            parameters:
+              - --catalog
+              - ${var.catalog}
+              - --sql-dir
+              - ${workspace.file_path}/sql/governance
+              - --files
+              - 00_setup.sql
+              - 10_security.sql
+
+        - task_key: refresh_pipeline
+          description: Lakeflow pipeline bronze -> silver -> gold with data quality expectations.
+          depends_on:
+            - task_key: governance_setup
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.dec_demo_etl.id}
+
+        - task_key: publish_data_products
+          description: Domain, ownership, certification and personal-data tags, then grants (sql/governance 20 and 30).
+          depends_on:
+            - task_key: refresh_pipeline
+          environment_key: default
+          python_wheel_task:
+            package_name: dec_demo
+            entry_point: dec-governance
+            parameters:
+              - --catalog
+              - ${var.catalog}
+              - --sql-dir
+              - ${workspace.file_path}/sql/governance
+              - --files
+              - 20_data_products.sql
+              - 30_grants.sql
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: ${var.serverless_env_version}
+            dependencies:
+              - ../dist/*.whl

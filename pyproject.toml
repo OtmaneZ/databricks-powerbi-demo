@@ -7,6 +7,10 @@ dependencies = [
     # Runtime deps for jobs/wheel. For pipelines, also declare them in resources/*.pipeline.yml `environment`.
 ]
 
+[project.scripts]
+dec-generate = "dec_demo.generate:main"
+dec-governance = "dec_demo.governance:main"
+
 [dependency-groups]
 dev = [
     "databricks-connect>=18.3,<18.4",  # = serverless environment_version 5 (Python 3.12.3)
